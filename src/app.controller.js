@@ -1,4 +1,5 @@
 import express from "express";
+import { env } from "../config/env.service.js";
 
 export const bootstrap = ()=>{
 
@@ -9,7 +10,7 @@ export const bootstrap = ()=>{
         res.send("Server is running");
     });
 
-    app.listen(3000, ()=>{
-        console.log("Server is running on http://localhost:3000");
+    app.listen(env.port, ()=>{
+        console.log(`Server is running on http://localhost:${env.port}`);
     });
 }
