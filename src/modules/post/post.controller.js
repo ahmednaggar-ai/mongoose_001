@@ -1,3 +1,5 @@
+import { postModel } from "../../models/post.model.js";
+import { getUnknownSchemaKeys, unknownFieldsErrorPayload } from "../../utils/schema-body.js";
 import { existUserById, normalizeUserIdForDb } from "../user/user.service.js";
 import { addPost, deletePostById, existPostByContent, retrievePostById, retrievePosts, updatePostById } from "./post.service.js";
 
@@ -13,6 +15,10 @@ const getPostById = async (req, res) => {
 }
 
 const createPost = async (req, res) => {
+    const unknownKeys = getUnknownSchemaKeys(req.body, postModel.schema);
+    if (unknownKeys.length > 0) {
+        return res.status(400).json(unknownFieldsErrorPayload(unknownKeys));
+    }
     let {title, content, userId} = req.body;
     userId = normalizeUserIdForDb(userId);
     if (!userId) {
@@ -35,17 +41,16 @@ const createPost = async (req, res) => {
             message: "User not found",
         })
     }
-    const postData = {
-        title,
-        content,
-        userId,
-    }
-    const response = await addPost(postData);
+    const response = await addPost({ ...req.body, userId });
     res.status(response.success ? 200 : 400).json(response);
 }
 
 const updatePost = async (req, res) => {
     let { id } = req.params;
+    const unknownKeys = getUnknownSchemaKeys(req.body, postModel.schema);
+    if (unknownKeys.length > 0) {
+        return res.status(400).json(unknownFieldsErrorPayload(unknownKeys));
+    }
     let { title, content, userId } = req.body;
     userId = normalizeUserIdForDb(userId);
     if (!userId) {
@@ -67,6 +72,10 @@ const updatePost = async (req, res) => {
 
 const deletePost = async (req, res) => {
     let {id} = req.params;
+    const unknownKeys = getUnknownSchemaKeys(req.body, postModel.schema);
+    if (unknownKeys.length > 0) {
+        return res.status(400).json(unknownFieldsErrorPayload(unknownKeys));
+    }
     let userId = normalizeUserIdForDb(req.body.userId);
     if (!userId) {
         return res.status(400).json({

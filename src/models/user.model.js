@@ -17,5 +17,8 @@ const userSchema = new mongoose.Schema({
     phone :{
         type: String,
     }
-},{timestamps: true})
+},{
+    timestamps: true,
+    strict: "throw",
+})
 export const userModel = mongoose.model("user", userSchema);

@@ -1,3 +1,5 @@
+import { userModel } from "../../models/user.model.js";
+import { getUnknownSchemaKeys, unknownFieldsErrorPayload } from "../../utils/schema-body.js";
 import { addUser, changeUserData, existsUser, removeUser, retreiveUserById, retrieveUsers } from "./user.service.js";
 
 const getUsersList = async (req, res) => {
@@ -12,6 +14,10 @@ const getUserById = async(req, res) => {
 };
 
 const createUser = async (req, res) => {
+  const unknownKeys = getUnknownSchemaKeys(req.body, userModel.schema);
+  if (unknownKeys.length > 0) {
+    return res.status(400).json(unknownFieldsErrorPayload(unknownKeys));
+  }
   let {userName, email, password, phone} = req.body;
   const exists = await existsUser(email)
   if(exists){
@@ -20,26 +26,17 @@ const createUser = async (req, res) => {
       message: "User already exists",
     })
   }
-  const userData = {
-    userName,
-    email,
-    password,
-    phone,
-  }
-  const response = await addUser(userData);
+  const response = await addUser(req.body);
   res.status(response.success ? 200 : 400).json(response);
 };
 
 const updateUser = async(req, res) => {
   let {id} = req.params;
-  let {userName, email, password, phone} = req.body;
-  const userData = {
-    userName,
-    email,
-    password,
-    phone,
+  const unknownKeys = getUnknownSchemaKeys(req.body, userModel.schema);
+  if (unknownKeys.length > 0) {
+    return res.status(400).json(unknownFieldsErrorPayload(unknownKeys));
   }
-  const response = await changeUserData(id, userData);
+  const response = await changeUserData(id, req.body);
   res.status(response.success ? 200 : 400).json(response);
 };
 
